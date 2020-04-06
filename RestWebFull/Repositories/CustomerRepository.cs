@@ -3,8 +3,8 @@ using RestWebFull.Domain;
 using RestWebFull.Entities;
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RestWebFull.Repositories
@@ -19,7 +19,8 @@ namespace RestWebFull.Repositories
 
         public async Task<IEnumerable<Customer>> GetAll()
         {
-            return await packDbContext.Customers.ToListAsync();
+            var result = await packDbContext.Customers.ToListAsync();
+            return result.ToList();
         }
 
         public async Task Add(Customer customer)
@@ -36,8 +37,7 @@ namespace RestWebFull.Repositories
 
         public async Task<Customer> GetById(Guid id)
         {
-            var result = await GetAll();
-            return result.First();
+            return await packDbContext.Customers.FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task Save()

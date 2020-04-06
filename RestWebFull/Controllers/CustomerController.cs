@@ -24,7 +24,7 @@ namespace RestWebFull.Controllers
         {
             try
             {
-                var list = await customerReader.ListAll();
+                var list = customerReader.ListAll();
                 return Ok(new { Customers = list });
             }
             catch(Exception ex)
