@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RestWebFull.Models;
 using RestWebFull.Repositories;
 using RestWebFull.Services;
 using System;
@@ -13,9 +14,16 @@ namespace RestWebFull.Controllers
     public class CustomerController : Controller
     {
         private readonly ICustomerReader customerReader;
-        public CustomerController(ICustomerReader customerReader)
+        private readonly ICreatorCustomer creatorCustomer;
+        private readonly ICustomerUpdater customerUpdater;
+        public CustomerController(
+            ICustomerReader customerReader,
+            ICreatorCustomer creatorCustomer,
+            ICustomerUpdater customerUpdater)
         {
             this.customerReader = customerReader;
+            this.creatorCustomer = creatorCustomer;
+            this.customerUpdater = customerUpdater;
         }
 
         [Route("")]
@@ -46,6 +54,55 @@ namespace RestWebFull.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"GetAll ==> {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [Route("")]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CustomerModel customerModel)
+        {
+            try
+            {
+                await creatorCustomer.Create(customerModel);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetAll ==> {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [Route("{id}")]
+        [HttpPut]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CustomerModel customerModel)
+        {
+            try
+            {
+                customerModel.SetId(id);
+                await customerUpdater.Update(customerModel);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Update ==> {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [Route("{id}")]
+        [HttpDelete]
+        public async Task<IActionResult> Remove(Guid id)
+        {
+            try
+            {
+                await customerUpdater.Remove(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Remove ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

@@ -26,6 +26,7 @@ namespace RestWebFull.Repositories
         public async Task Add(Customer customer)
         {
             await packDbContext.AddAsync<Customer>(customer);
+            await Save();
         }
 
         public async Task Delete(Guid id)

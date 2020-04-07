@@ -22,8 +22,6 @@ namespace RestWebFull
 
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         private readonly IWebHostEnvironment _env;
 
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -48,6 +46,8 @@ namespace RestWebFull
             services.AddMvc(option => option.EnableEndpointRouting = false);
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerReader, CustomerReader>();
+            services.AddScoped<ICustomerUpdater, CustomerUpdater>();
+            services.AddScoped<ICreatorCustomer, CreatorCustomer>();
             services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
 
             var sp = services.BuildServiceProvider();
