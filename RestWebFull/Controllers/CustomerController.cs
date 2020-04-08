@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using RestWebFull.Dtos;
 using RestWebFull.Models;
 using RestWebFull.Repositories;
@@ -19,15 +20,18 @@ namespace RestWebFull.Controllers
         private readonly ICustomerReader customerReader;
         private readonly ICreatorCustomer creatorCustomer;
         private readonly ICustomerUpdater customerUpdater;
+        private readonly ILogger<CustomerController> logger;
 
         public CustomerController(
             ICustomerReader customerReader,
             ICreatorCustomer creatorCustomer,
-            ICustomerUpdater customerUpdater)
+            ICustomerUpdater customerUpdater,
+            ILogger<CustomerController> logger)
         {
             this.customerReader = customerReader;
             this.creatorCustomer = creatorCustomer;
             this.customerUpdater = customerUpdater;
+            this.logger = logger;
         }
 
         [Route("")]
@@ -36,12 +40,14 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                logger.LogInformation("GetAll");
                 var list = await customerReader.ListAll();
                 return Ok(new { Customers = list });
             }
             catch(Exception ex)
             {
                 Console.WriteLine($"GetAll ==> {ex.Message}");
+                logger.LogError(ex, "GetAll");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -52,12 +58,16 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                logger.LogInformation($"GetById Id {id}");
+
                 var customer = await customerReader.GetById(id);
                 return Ok(new { Customer = customer });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"GetAll ==> {ex.Message}");
+                logger.LogError(ex, "GetById");
+
+                Console.WriteLine($"GetById ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
@@ -68,11 +78,22 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                if(customerModel == null)
+                    return BadRequest(new { Message = "Corpo da requição invalido" });
+
+                if (!ModelState.IsValid)
+                    return BadRequest(new { Message = "Preenchimento invalido" });
+
+
+                logger.LogInformation("Create");
+
                 await creatorCustomer.Create(customerModel);
                 return Ok();
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Create");
+
                 Console.WriteLine($"GetAll ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -84,12 +105,19 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                    return BadRequest(new { Message = "Preenchimento invalido" });
+
+                logger.LogInformation("Update");
+
                 customerModel.SetId(id);
                 await customerUpdater.Update(customerModel);
                 return Ok();
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Update");
+
                 Console.WriteLine($"Update ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -101,11 +129,15 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                logger.LogInformation($"Remove Id {id}");
+
                 await customerUpdater.Remove(id);
                 return Ok();
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, "Remove");
+
                 Console.WriteLine($"Remove ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
@@ -117,6 +149,8 @@ namespace RestWebFull.Controllers
         {
             try
             {
+                logger.LogInformation($"Patch Id {id}");
+
                 var customer = await customerReader.GetById(id);
                 var _patch = Mapper.Map<CustomerUpdateDto>(customer);
                 customerPatch.ApplyTo(_patch);
@@ -127,6 +161,8 @@ namespace RestWebFull.Controllers
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, $"Patch Id {id}");
+
                 Console.WriteLine($"Remove ==> {ex.Message}");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

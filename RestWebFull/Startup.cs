@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using RestWebFull.Domain;
 using RestWebFull.Domain.Config;
 using RestWebFull.Dtos;
@@ -44,15 +45,25 @@ namespace RestWebFull
         {
             services.AddOptions();
             services.Configure<MyConfiguration>(Configuration);
-            services.AddMvc(option => option.EnableEndpointRouting = false);
+            services.AddMvc(option => {
+                option.EnableEndpointRouting = false;
+                option.ReturnHttpNotAcceptable = true;
+            });
+
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerReader, CustomerReader>();
             services.AddScoped<ICustomerUpdater, CustomerUpdater>();
             services.AddScoped<ICreatorCustomer, CreatorCustomer>();
             services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
 
-            services
-            .AddControllersWithViews()
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+            });
+
+            services.AddControllersWithViews()
             .AddNewtonsoftJson();
 
             var sp = services.BuildServiceProvider();
