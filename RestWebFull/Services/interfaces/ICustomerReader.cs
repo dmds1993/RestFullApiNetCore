@@ -1,4 +1,5 @@
-﻿using RestWebFull.Dtos;
+﻿using RestWebFull.Domain;
+using RestWebFull.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,6 @@ namespace RestWebFull.Services
     public interface ICustomerReader
     {
         Task<IEnumerable<CustomerDto>> ListAll();
-        Task<CustomerDto> GetById(Guid id);
+        Task<Customer> GetById(Guid id);
     }
 }

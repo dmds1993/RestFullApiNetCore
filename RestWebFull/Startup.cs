@@ -10,6 +10,7 @@ using RestWebFull.Domain.Config;
 using RestWebFull.Dtos;
 using RestWebFull.Entities;
 using RestWebFull.Middlewares;
+using RestWebFull.Models;
 using RestWebFull.Repositories;
 using RestWebFull.Services;
 
@@ -50,6 +51,10 @@ namespace RestWebFull
             services.AddScoped<ICreatorCustomer, CreatorCustomer>();
             services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
 
+            services
+            .AddControllersWithViews()
+            .AddNewtonsoftJson();
+
             var sp = services.BuildServiceProvider();
 
             var databaseConfig = sp.GetService<IDatabaseConfig>();
@@ -72,6 +77,12 @@ namespace RestWebFull
             {
                 app.UseCustomMiddleware();
             }
+
+            AutoMapper.Mapper.Initialize(mapper =>
+            {
+                mapper.CreateMap<Customer, CustomerDto>().ReverseMap();
+                mapper.CreateMap<Customer, CustomerUpdateDto>().ReverseMap();
+            });
 
             app.UseStaticFiles();
             app.UseMvc();

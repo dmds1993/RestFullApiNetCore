@@ -1,4 +1,6 @@
-﻿using RestWebFull.Models;
+﻿using RestWebFull.Domain;
+using RestWebFull.Dtos;
+using RestWebFull.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,7 @@ namespace RestWebFull.Services
     public interface ICustomerUpdater
     {
         Task Update(CustomerModel customer);
+        Task Patch(Guid id, Customer customer);
         Task Remove(Guid id);
     }
 }

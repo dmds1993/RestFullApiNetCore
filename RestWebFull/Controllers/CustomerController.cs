@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using RestWebFull.Dtos;
 using RestWebFull.Models;
 using RestWebFull.Repositories;
 using RestWebFull.Services;
@@ -16,6 +19,7 @@ namespace RestWebFull.Controllers
         private readonly ICustomerReader customerReader;
         private readonly ICreatorCustomer creatorCustomer;
         private readonly ICustomerUpdater customerUpdater;
+
         public CustomerController(
             ICustomerReader customerReader,
             ICreatorCustomer creatorCustomer,
@@ -32,7 +36,7 @@ namespace RestWebFull.Controllers
         {
             try
             {
-                var list = customerReader.ListAll();
+                var list = await customerReader.ListAll();
                 return Ok(new { Customers = list });
             }
             catch(Exception ex)
@@ -98,6 +102,27 @@ namespace RestWebFull.Controllers
             try
             {
                 await customerUpdater.Remove(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Remove ==> {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        [Route("{id}")]
+        [HttpPatch]
+        public async Task<IActionResult> Patch(Guid id, [FromBody] JsonPatchDocument<CustomerUpdateDto> customerPatch)
+        {
+            try
+            {
+                var customer = await customerReader.GetById(id);
+                var _patch = Mapper.Map<CustomerUpdateDto>(customer);
+                customerPatch.ApplyTo(_patch);
+                Mapper.Map(_patch, customer);
+
+                await customerUpdater.Patch(id, customer);
                 return Ok();
             }
             catch (Exception ex)

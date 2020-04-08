@@ -1,4 +1,6 @@
-﻿using RestWebFull.Models;
+﻿using RestWebFull.Domain;
+using RestWebFull.Dtos;
+using RestWebFull.Models;
 using RestWebFull.Repositories;
 using System;
 using System.Threading.Tasks;
@@ -26,6 +28,11 @@ namespace RestWebFull.Services
                 Firstname = customer.Firstname,
                 Lastname = customer.Lastname
             });
+        }
+
+        public async Task Patch(Guid id, Customer customer)
+        {
+            await customerRepository.Update(customer);
         }
     }
 }
