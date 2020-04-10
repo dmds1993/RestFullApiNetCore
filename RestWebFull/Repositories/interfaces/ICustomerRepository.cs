@@ -1,4 +1,5 @@
 ﻿using RestWebFull.Domain;
+using RestWebFull.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace RestWebFull.Repositories
     {
         Task Delete(Guid id);
         Task Update(Customer customer);
-        Task<IEnumerable<Customer>> GetAll();
+        Task<IEnumerable<Customer>> GetAll(CustomerQueryParameters customerQueryParameters);
         Task Save();
         Task Add(Customer customer);
         Task<Customer> GetById(Guid id);

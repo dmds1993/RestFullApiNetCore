@@ -1,5 +1,6 @@
 ﻿using RestWebFull.Domain;
 using RestWebFull.Dtos;
+using RestWebFull.Models;
 using RestWebFull.Repositories;
 using System;
 using System.Collections.Generic;
@@ -20,9 +21,9 @@ namespace RestWebFull.Services
             return await customerRepository.GetById(id);
         }
 
-        public async Task<IEnumerable<CustomerDto>> ListAll()
+        public async Task<IEnumerable<CustomerDto>> ListAll(CustomerQueryParameters customerQueryParameters)
         {
-            var result = await customerRepository.GetAll();
+            var result = await customerRepository.GetAll(customerQueryParameters);
             return result.Select(r => new CustomerDto 
             {
                 Id = r.Id,

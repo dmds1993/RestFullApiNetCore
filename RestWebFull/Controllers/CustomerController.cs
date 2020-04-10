@@ -36,17 +36,19 @@ namespace RestWebFull.Controllers
 
         [Route("")]
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] CustomerQueryParameters customerQueryParameters)
         {
             try
             {
+                if (customerQueryParameters == null)
+                    customerQueryParameters = new CustomerQueryParameters();
+
                 logger.LogInformation("GetAll");
-                var list = await customerReader.ListAll();
+                var list = await customerReader.ListAll(customerQueryParameters);
                 return Ok(new { Customers = list });
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"GetAll ==> {ex.Message}");
                 logger.LogError(ex, "GetAll");
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }

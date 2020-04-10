@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RestWebFull.Domain;
 using RestWebFull.Entities;
+using RestWebFull.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RestWebFull.Repositories
@@ -17,10 +17,30 @@ namespace RestWebFull.Repositories
             this.packDbContext = packDbContext;
         }
 
-        public async Task<IEnumerable<Customer>> GetAll()
+        public async Task<IEnumerable<Customer>> GetAll(CustomerQueryParameters customerQueryParameters)
         {
-            var result = await packDbContext.Customers.ToListAsync();
-            return result.ToList();
+            IEnumerable<Customer> result;
+            if(customerQueryParameters.HasQuery)
+            {
+                result = await packDbContext.Customers
+                   .FromSqlRaw($@"
+                    SELECT [Id]
+                      ,[Firstname]
+                      ,[Lastname]
+                      ,[Age]
+                  FROM [dbo].[Customers] WHERE Firstname LIKE '%{customerQueryParameters.Query}%'
+                   OR Lastname LIKE '%{customerQueryParameters.Query}%'
+                   ")
+                   .ToListAsync();
+            }
+            else
+            {
+                result = await packDbContext.Customers.ToListAsync();
+            }
+
+            return result.OrderBy(c => c.Firstname)
+                .Skip(customerQueryParameters.PageCount * (customerQueryParameters.Page - 1))
+                .Take(customerQueryParameters.PageCount);
         }
 
         public async Task Add(Customer customer)

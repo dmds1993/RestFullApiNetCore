@@ -14,6 +14,9 @@ using RestWebFull.Middlewares;
 using RestWebFull.Models;
 using RestWebFull.Repositories;
 using RestWebFull.Services;
+using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.Swagger;
 
 namespace RestWebFull
 {
@@ -56,6 +59,12 @@ namespace RestWebFull
             services.AddScoped<ICreatorCustomer, CreatorCustomer>();
             services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
 
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My first WebAPI", Version = "v1" });
+            });
+
+
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
@@ -88,6 +97,15 @@ namespace RestWebFull
             {
                 app.UseCustomMiddleware();
             }
+
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
 
             AutoMapper.Mapper.Initialize(mapper =>
             {
