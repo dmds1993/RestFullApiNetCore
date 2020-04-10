@@ -24,12 +24,12 @@ namespace RestWebFull.Repositories
             {
                 result = await packDbContext.Customers
                    .FromSqlRaw($@"
-                    SELECT [Id]
-                      ,[Firstname]
-                      ,[Lastname]
-                      ,[Age]
-                  FROM [dbo].[Customers] WHERE Firstname LIKE '%{customerQueryParameters.Query}%'
-                   OR Lastname LIKE '%{customerQueryParameters.Query}%'
+                        SELECT [Id]
+                          ,[Firstname]
+                          ,[Lastname]
+                          ,[Age]
+                      FROM [dbo].[Customers] WHERE Firstname LIKE '%{customerQueryParameters.Query}%'
+                       OR Lastname LIKE '%{customerQueryParameters.Query}%'
                    ")
                    .ToListAsync();
             }
