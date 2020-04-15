@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 namespace RestWebFull.Controllers
 {
     [Route("api/v1/customers")]
+    [Authorize(Policy = "resourcesUser")]
     public class CustomerController : Controller
     {
         private readonly ICustomerReader customerReader;

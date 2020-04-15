@@ -11,12 +11,12 @@ using RestWebFull.Domain.Config;
 using RestWebFull.Dtos;
 using RestWebFull.Entities;
 using RestWebFull.Middlewares;
-using RestWebFull.Models;
 using RestWebFull.Repositories;
 using RestWebFull.Services;
-using Swashbuckle.AspNetCore.Swagger;
+using System.IdentityModel.Tokens.Jwt;
+using RestWebFull.Services.interfaces;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace RestWebFull
 {
@@ -53,17 +53,52 @@ namespace RestWebFull
                 option.ReturnHttpNotAcceptable = true;
             });
 
+            services.AddOptions();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder =>
+                    {
+                        builder
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
+
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerReader, CustomerReader>();
             services.AddScoped<ICustomerUpdater, CustomerUpdater>();
             services.AddScoped<ICreatorCustomer, CreatorCustomer>();
             services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(config =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My first WebAPI", Version = "v1" });
+                config.SwaggerDoc("v1", new OpenApiInfo { Title = "My first WebAPI", Version = "v1" });
             });
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("resourcesAdmin", policyAdmin => {
+                    policyAdmin.RequireClaim("role", "resources.admin");
+                });
+                options.AddPolicy("resourcesUser", policyAdmin => {
+                    policyAdmin.RequireClaim("role", "resources.user");
+                });
+            });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("resourcesAdmin", policyAdmin =>
+                {
+                    policyAdmin.RequireClaim("role", "resources.admin");
+                });
+                options.AddPolicy("resourcesUser", policyUser =>
+                {
+                    policyUser.RequireClaim("role", "resources.user");
+                });
+            });
 
             services.AddLogging(loggingBuilder =>
             {
@@ -72,8 +107,26 @@ namespace RestWebFull
                 loggingBuilder.AddDebug();
             });
 
+            services.AddDbContext<PackDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<ISeedDataService, SeedDataService>();
+
             services.AddControllersWithViews()
             .AddNewtonsoftJson();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme =
+                                           JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme =
+                                           JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(o =>
+            {
+                o.Authority = "http://localhost:5000";
+                o.Audience = "apiApp";
+                o.RequireHttpsMetadata = false;
+            });
 
             var sp = services.BuildServiceProvider();
 
@@ -100,8 +153,6 @@ namespace RestWebFull
 
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
