@@ -11,16 +11,12 @@ namespace IdentityServer
     {
         public static IEnumerable<ApiResource> GetApiResources()
         {
-            return new List<ApiResource> { new ApiResource ("resourcesScope", "Identity My API")
-            {
-                UserClaims = { }
-            } };
+            return new List<ApiResource> { new ApiResource("resourcesScope", "My API") { UserClaims = { "role" } } };
         }
 
         public static IEnumerable<Client> GetClients()
         {
-            return new List<Client>
-            {
+            return new List<Client> {
                 new Client
                 {
                     ClientId = "postmanClient",
@@ -29,8 +25,7 @@ namespace IdentityServer
                     AllowOfflineAccess = true,
                     AlwaysSendClientClaims = true,
                     RequireClientSecret = false,
-                    AllowedScopes =
-                    {
+                    AllowedScopes = {
                         IdentityServerConstants.StandardScopes.Profile,
                         "roles",
                         "resourcesScope"

@@ -1,14 +1,9 @@
-﻿using IdentityServer.Repositories;
+﻿using IdentityServer.Middlewares;
+using IdentityServer.Repositories;
 using IdentityServer.Repositories.Interfaces;
 using IdentityServer.Services;
-using IdentityServer4.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace IdentityServer.Middlewares
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class CustomIdentityServerBuilderExtensions
     {

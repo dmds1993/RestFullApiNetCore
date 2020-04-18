@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace RestWebFull.Controllers
 {
     [Route("api/v1/customers")]
-    [Authorize(Policy = "resourcesUser")]
+    [Authorize(Roles = "resources.user")]
     public class CustomerController : Controller
     {
         private readonly ICustomerReader customerReader;

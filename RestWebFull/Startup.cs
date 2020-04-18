@@ -53,6 +53,22 @@ namespace RestWebFull
                 option.ReturnHttpNotAcceptable = true;
             });
 
+            services.AddScoped<ISeedDataService, SeedDataService>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<ICustomerReader, CustomerReader>();
+            services.AddScoped<ICustomerUpdater, CustomerUpdater>();
+            services.AddScoped<ICreatorCustomer, CreatorCustomer>();
+
+            services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
+
+            var sp = services.BuildServiceProvider();
+
+            var databaseConfig = sp.GetService<IDatabaseConfig>();
+
+
+            services.AddDbContext<PackDbContext>(options => options.UseSqlServer(databaseConfig.ConnectionString));
+            services.AddDbContext<PackDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddOptions();
 
             services.AddCors(options =>
@@ -67,12 +83,7 @@ namespace RestWebFull
                     });
             });
 
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddScoped<ICustomerReader, CustomerReader>();
-            services.AddScoped<ICustomerUpdater, CustomerUpdater>();
-            services.AddScoped<ICreatorCustomer, CreatorCustomer>();
-            services.AddSingleton(s => GetSettings<IDatabaseConfig, DataBaseConfig>(Configuration, "DataBase"));
-
+            
             services.AddSwaggerGen(config =>
             {
                 config.SwaggerDoc("v1", new OpenApiInfo { Title = "My first WebAPI", Version = "v1" });
@@ -88,29 +99,12 @@ namespace RestWebFull
                 });
             });
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("resourcesAdmin", policyAdmin =>
-                {
-                    policyAdmin.RequireClaim("role", "resources.admin");
-                });
-                options.AddPolicy("resourcesUser", policyUser =>
-                {
-                    policyUser.RequireClaim("role", "resources.user");
-                });
-            });
-
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(Configuration.GetSection("Logging"));
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
             });
-
-            services.AddDbContext<PackDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddScoped<ISeedDataService, SeedDataService>();
 
             services.AddControllersWithViews()
             .AddNewtonsoftJson();
@@ -123,16 +117,12 @@ namespace RestWebFull
                                            JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(o =>
             {
-                o.Authority = "http://localhost:5000";
-                o.Audience = "apiApp";
+                o.Authority = "http://localhost:60622";
+                o.Audience = "resourcesScope";
                 o.RequireHttpsMetadata = false;
             });
 
-            var sp = services.BuildServiceProvider();
-
-            var databaseConfig = sp.GetService<IDatabaseConfig>();
-
-            services.AddDbContext<PackDbContext>(options => options.UseSqlServer(databaseConfig.ConnectionString));
+            
         }
 
         private static T GetSettings<T, I>(IConfiguration config, string settingsName)
@@ -163,6 +153,9 @@ namespace RestWebFull
                 mapper.CreateMap<Customer, CustomerDto>().ReverseMap();
                 mapper.CreateMap<Customer, CustomerUpdateDto>().ReverseMap();
             });
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseStaticFiles();
             app.UseMvc();
